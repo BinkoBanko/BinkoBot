@@ -1,0 +1,7 @@
+discord.py==2.3.2
+aiohttp
+requests
+python-dotenv
+typing_extensions
+async-timeout
+flask

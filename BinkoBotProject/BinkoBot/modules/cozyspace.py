@@ -1,0 +1,1 @@
+# cozyspace.py logic placeholder
