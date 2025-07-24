@@ -1,1 +1,0 @@
-# nightmode.py logic placeholder
