@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import json
 import random
+import logging
 from utils.sender import send_private_or_public
 
 class Flirt(commands.Cog):
