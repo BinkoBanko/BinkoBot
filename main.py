@@ -1,5 +1,6 @@
 
 import os
+import json
 import discord
 import asyncio
 import logging
@@ -17,8 +18,14 @@ logging.basicConfig(
 intents = discord.Intents.default()
 intents.message_content = True
 
+# Load configuration
+with open("config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
+
+prefix = config.get("prefix", "!")
+
 # Bot setup
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
 
 # Extension modules (Cogs)
 initial_extensions = [
