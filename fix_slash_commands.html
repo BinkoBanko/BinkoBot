@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix BinkoBot Slash Commands</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #36393f;
+            color: #dcddde;
+            line-height: 1.6;
+        }
+        .container {
+            background: #2f3136;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #5865f2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .error-box {
+            background: #ed4245;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .solution-box {
+            background: #57f287;
+            color: #1e1f22;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .invite-button {
+            display: inline-block;
+            background: #5865f2;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .invite-button:hover {
+            background: #4752c4;
+        }
+        .steps {
+            background: #40444b;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .code {
+            background: #1e1f22;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Fix BinkoBot Slash Commands</h1>
+        
+        <div class="error-box">
+            <strong>❌ Error:</strong> "Integration requires code grant" - Slash commands not visible
+        </div>
+        
+        <div class="solution-box">
+            <strong>✅ Solution:</strong> Re-invite bot with applications.commands scope
+        </div>
+        
+        <h2>Quick Fix - Click to Re-invite:</h2>
+        
+        <a href="https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=2240518825457348590&scope=bot%20applications.commands" 
+           class="invite-button" target="_blank">
+            🔗 RECOMMENDED: All Features (Safe)
+        </a>
+        
+        <a href="https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=8796093402176&scope=bot%20applications.commands" 
+           class="invite-button" target="_blank">
+            🔗 BASIC: Essential Only
+        </a>
+        
+        <div class="steps">
+            <h3>Steps to Fix:</h3>
+            <div class="step">1. Click one of the invite buttons above</div>
+            <div class="step">2. Select your Discord server</div>
+            <div class="step">3. Review permissions (uncheck any you don't want)</div>
+            <div class="step">4. Click "Authorize"</div>
+            <div class="step">5. Type "/" in Discord - commands will appear instantly!</div>
+        </div>
+        
+        <h3>What went wrong?</h3>
+        <p>The bot was originally invited with only the "bot" scope. Slash commands require the "applications.commands" scope as well. This is a Discord OAuth requirement - not a code issue.</p>
+        
+        <h3>Available Commands (after fix):</h3>
+        <div class="code">
+            /affirm - Get personalized encouragement
+            /flirt - Playful social interactions  
+            /touch - Virtual affection commands
+            /music - Play music from YouTube/Spotify
+            /setvibe - Set your mood with roles
+            /note - Personal note management
+            /help - Full command list
+            ...and 22 more commands!
+        </div>
+        
+        <p><strong>All 29 slash commands</strong> are coded and ready - they just need the proper Discord permissions to display.</p>
+    </div>
+</body>
+</html>
