@@ -38,12 +38,17 @@ import atexit
 
 def start_bot_background():
     """Start Discord bot in background thread when imported by gunicorn"""
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
-    print("Discord bot started in background thread")
+    if os.getenv("RUN_MODE", "both") in ["both", "bot"]:
+        try:
+            bot_thread = threading.Thread(target=run_bot, daemon=True)
+            bot_thread.start()
+            print("✅ Discord bot started in background thread")
+        except Exception as e:
+            print(f"❌ Failed to start Discord bot: {e}")
 
-# Start bot when imported by gunicorn
-start_bot_background()
+# Only start bot automatically if not explicitly disabled
+if os.getenv("DISABLE_AUTO_BOT") != "1":
+    start_bot_background()
 
 # For gunicorn - export the Flask app
 from app import app

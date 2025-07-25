@@ -110,39 +110,52 @@ async def on_ready():
     # Load all extensions first
     await load_all_extensions()
     
-    # Wait a moment for cogs to fully initialize
-    await asyncio.sleep(2)
+    # Wait for all cogs to fully initialize
+    await asyncio.sleep(3)
     
     try:
-        # Clear existing commands first
+        # Force clear all existing commands
+        logging.info("🧹 Clearing existing commands...")
         bot.tree.clear_commands(guild=None)
+        
+        # Wait for clear to take effect
+        await asyncio.sleep(1)
         
         # Get all commands from loaded cogs
         all_commands = bot.tree.get_commands()
-        logging.info(f"Found {len(all_commands)} commands to sync")
+        logging.info(f"🔍 Found {len(all_commands)} commands ready to sync")
         
-        # Sync to dev guild first if specified (faster)
-        if DEV_GUILD_ID:
-            dev_guild = discord.Object(id=int(DEV_GUILD_ID))
-            # Copy commands to dev guild
-            for cmd in all_commands:
-                bot.tree.add_command(cmd, guild=dev_guild)
-            dev_synced = await bot.tree.sync(guild=dev_guild)
-            logging.info(f"🔁 Synced {len(dev_synced)} slash commands to dev guild {DEV_GUILD_ID}")
+        # List what we found before syncing
+        for cmd in all_commands:
+            logging.info(f"📝 Command ready: /{cmd.name} - {cmd.description}")
         
-        # Sync globally
+        # Sync globally (this is the most important part)
+        logging.info("🚀 Starting global command sync...")
         synced = await bot.tree.sync()
-        logging.info(f"🔁 Synced {len(synced)} slash commands globally")
+        logging.info(f"✅ Successfully synced {len(synced)} slash commands globally")
 
-        # List all synced commands
-        for command in synced:
+        # Verify what was actually synced
+        logging.info("📋 Synced commands:")
+        for i, command in enumerate(synced, 1):
             desc = getattr(command, 'description', None) or 'No description'
-            logging.info(f"📋 /{command.name} – {desc}")
+            logging.info(f"  {i}. /{command.name} – {desc}")
+            
+        # Additional verification - check if commands are accessible via tree
+        tree_commands = bot.tree.get_commands()
+        logging.info(f"🌳 Command tree contains {len(tree_commands)} commands")
 
     except Exception as e:
-        logging.error(f"⚠️ Slash command sync failed: {e}")
+        logging.error(f"❌ Critical slash command sync error: {e}")
         import traceback
         logging.error(traceback.format_exc())
+        
+        # Try alternative sync method
+        try:
+            logging.info("🔄 Attempting alternative sync method...")
+            await bot.tree.sync()
+            logging.info("✅ Alternative sync completed")
+        except Exception as e2:
+            logging.error(f"❌ Alternative sync also failed: {e2}")
 
 # Load extensions in parallel
 async def load_all_extensions():
