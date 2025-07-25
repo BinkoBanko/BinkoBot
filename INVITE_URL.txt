@@ -1,10 +1,10 @@
 BinkoBot - Official Invite URLs
 ==============================
 
-Choose the permission level that fits your server:
+PRIMARY INVITE (Your custom permissions - RECOMMENDED):
+https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=39980746795216&scope=bot%20applications.commands
 
-RECOMMENDED (All features, safe for public):
-https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=1227061024030776&scope=bot%20applications.commands
+ALTERNATIVE OPTIONS:
 
 MAXIMUM (Everything including moderation):
 https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=2455024109338632&scope=bot%20applications.commands
