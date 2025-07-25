@@ -33,6 +33,27 @@ BinkoBot is a modular Discord companion bot focused on cozy vibes and small comm
 You can export these variables in your shell or simply place them in an `.env` file.
 `main.py` automatically loads this file using `python-dotenv` on startup.
 
+## Configuration
+
+All default settings for the bot are stored in [`config.json`](config.json).
+Each key in this file tweaks a piece of BinkoBot's behavior:
+
+- `prefix` – Prefix used for legacy text commands.
+- `privacy_mode` – Controls how much temporary data the bot keeps. Set to
+  `standard` for basic features or `strict` to minimize logging and storage.
+- `unclassified_music_enabled` – When `true`, the playlist module can suggest
+  songs without vibe tags.
+- `enhanced_personality_enabled` – Enables extra responses and flirtiness.
+- `max_cozyspaces` – Maximum number of cozyspaces the bot maintains
+  simultaneously.
+- `auto_delete_inactive_after` – Seconds before inactive vibe or note data is
+  purged automatically.
+- `allow_lewd_in_cozyspace_only` – Restricts lewd commands to cozyspace
+  channels and DMs.
+- `logging.enabled` – Toggles log output to the console.
+- `logging.log_flags_only` – If enabled, only logs flagged events rather than
+  every message.
+
 ## Running the Bot
 
 Once dependencies and environment variables are set, start BinkoBot with:
