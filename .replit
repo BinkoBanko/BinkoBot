@@ -1,6 +1,7 @@
 modules = ["python-3.11", "postgresql-16"]
 
 [workflows]
+runButton = "Run Discord Bot"
 
 [[workflows.workflow]]
 name = "Project"
