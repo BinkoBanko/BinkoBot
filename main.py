@@ -10,22 +10,40 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Logging setup
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(asctime)s] [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-
-# Intents setup
-intents = discord.Intents.default()
-intents.message_content = True
-
 # Load configuration
 with open("config.json", "r", encoding="utf-8") as f:
     config = json.load(f)
 
+logging_cfg = config.get("logging", {})
+logging_enabled = logging_cfg.get("enabled", True)
+log_flags_only = logging_cfg.get("log_flags_only", False)
+
 prefix = config.get("prefix", "!")
+
+# Logging setup
+if logging_enabled:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[%(asctime)s] [%(levelname)s] %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    if log_flags_only:
+        class FlagOnlyFilter(logging.Filter):
+            def filter(self, record: logging.LogRecord) -> bool:
+                return getattr(record, "flagged", False)
+
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(FlagOnlyFilter())
+else:
+    logging.basicConfig(
+        level=logging.WARNING,
+        format='[%(asctime)s] [%(levelname)s] %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+
+# Intents setup
+intents = discord.Intents.default()
+intents.message_content = True
 
 # Bot setup
 bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
