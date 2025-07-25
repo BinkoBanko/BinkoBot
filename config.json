@@ -6,6 +6,7 @@
   "max_cozyspaces": 1,
   "auto_delete_inactive_after": 86400,
   "allow_lewd_in_cozyspace_only": true,
+  "nightmode_hour": 22,
   "logging": {
     "enabled": true,
     "log_flags_only": true

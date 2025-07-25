@@ -4,6 +4,7 @@ import json
 import discord
 import asyncio
 import logging
+from datetime import datetime
 from discord.ext import commands
 from keep_alive import keep_alive
 from dotenv import load_dotenv
@@ -19,6 +20,18 @@ logging_enabled = logging_cfg.get("enabled", True)
 log_flags_only = logging_cfg.get("log_flags_only", False)
 
 prefix = config.get("prefix", "!")
+nightmode_hour = config.get("nightmode_hour", 22)
+
+NIGHTMODE_FILE = "data/nightmode_status.json"
+os.makedirs("data", exist_ok=True)
+if not os.path.exists(NIGHTMODE_FILE):
+    with open(NIGHTMODE_FILE, "w", encoding="utf-8") as f:
+        json.dump({}, f)
+
+def nightmode_enabled(guild_id: int) -> bool:
+    with open(NIGHTMODE_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get(str(guild_id), False)
 
 # Logging setup
 if logging_enabled:
@@ -48,6 +61,22 @@ intents.message_content = True
 # Bot setup
 bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
 
+
+@bot.tree.check
+async def check_nightmode(interaction: discord.Interaction) -> bool:
+    if not interaction.guild:
+        return True
+    if not nightmode_enabled(interaction.guild.id):
+        return True
+    if datetime.now().hour >= nightmode_hour:
+        if interaction.command and not interaction.command.qualified_name.startswith("nightmode"):
+            if not interaction.response.is_done():
+                await interaction.response.send_message("\U0001F319 Night mode is active.", ephemeral=True)
+            else:
+                await interaction.followup.send("\U0001F319 Night mode is active.", ephemeral=True)
+            return False
+    return True
+
 # Extension modules (Cogs)
 initial_extensions = [
     "modules.analytics",
@@ -71,6 +100,7 @@ initial_extensions = [
     "modules.locked",
     "modules.mental_support",
     "modules.wholesome_chaos",
+    "modules.nightmode",
 ]
 
 # Optional Dev Guild for faster slash command registration
