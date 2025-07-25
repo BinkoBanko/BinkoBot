@@ -21,6 +21,7 @@ BinkoBot is a modular Discord companion bot focused on cozy vibes and small comm
 4. **Configure the bot**
    - Adjust `config.json` if you need to change the command prefix or other defaults.
    - Set the required environment variables described below.
+   - Optionally store them in a `.env` file for automatic loading.
 
 ## Environment Variables
 
@@ -29,7 +30,8 @@ BinkoBot is a modular Discord companion bot focused on cozy vibes and small comm
 - `REPLIT` – set to `1` when running on Replit so the keep-alive web server starts.
 - `LEGACY_MODE` – set to `1` to enable some legacy prefix commands such as `!ping`.
 
-You can export these variables in your shell or place them in an `.env` file and load them using `python-dotenv` if preferred.
+You can export these variables in your shell or simply place them in an `.env` file.
+`main.py` automatically loads this file using `python-dotenv` on startup.
 
 ## Running the Bot
 

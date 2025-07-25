@@ -6,6 +6,9 @@ import asyncio
 import logging
 from discord.ext import commands
 from keep_alive import keep_alive
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Logging setup
 logging.basicConfig(
@@ -56,9 +59,17 @@ async def on_ready():
     await load_all_extensions()
 
     try:
+        if DEV_GUILD_ID:
+            dev_guild = discord.Object(id=int(DEV_GUILD_ID))
+            dev_synced = await bot.tree.sync(guild=dev_guild)
+            logging.info(
+                f"🔁 Slash commands synced to DEV_GUILD_ID {DEV_GUILD_ID}: {len(dev_synced)}"
+            )
         bot.tree.clear_commands(guild=None)
         synced = await bot.tree.sync()
-        logging.info(f"🔁 Slash commands forcibly re-synced globally: {len(synced)}")
+        logging.info(
+            f"🔁 Slash commands forcibly re-synced globally: {len(synced)}"
+        )
 
         for command in bot.tree.get_commands():
             logging.info(f"📋 Registered slash command: /{command.name} – {command.description}")
