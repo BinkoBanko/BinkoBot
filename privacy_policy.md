@@ -26,7 +26,13 @@ BinkoBot is a modular Discord companion bot designed for cozy, adaptive, and per
 - When authorized by you, BinkoBot may:
   - Read your public playlist to recommend songs matching mood
   - Never accesses private listening history or modifies your Spotify account
-  - Tokens are stored only during active use and discarded immediately after
+- Tokens are stored only during active use and discarded immediately after
+
+#### 📊 Usage Analytics *(Optional)*
+- Records which commands are used and when
+- Stored locally in `data/analytics.json`
+- Only used for the `/stats` command so you can view your top commands
+- Set `ANALYTICS_ENABLED=0` before launching the bot to disable this logging
 
 ---
 
