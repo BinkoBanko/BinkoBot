@@ -1,3 +1,0 @@
-language = "python3"
-run = "python3 BinkoBot/main.py"
-entrypoint = "BinkoBot/main.py"
