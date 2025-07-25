@@ -8,7 +8,7 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python3 main.py"
 
 [[workflows.workflow]]
 name = "Bot Only"
@@ -17,7 +17,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python bot.py"
+args = "python3 bot.py"
 
 [[workflows.workflow]]
 name = "Web Dashboard Only"
@@ -26,7 +26,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python app.py"
+args = "python3 app.py"
 
 [[workflows.workflow]]
 name = "Test & Debug"
@@ -35,15 +35,15 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python test_bot_connection.py"
+args = "python3 test_bot_connection.py"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python test_module_loading.py"
+args = "python3 test_module_loading.py"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python force_sync_commands.py"
+args = "python3 force_sync_commands.py"
 
 [[workflows.workflow]]
 name = "Run Tests"
@@ -52,11 +52,11 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -m pytest tests/ -v"
+args = "python3 -m pytest tests/ -v"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python test_all_modules.py"
+args = "python3 test_all_modules.py"
 
 [[workflows.workflow]]
 name = "Quick Bot Test"
@@ -65,4 +65,4 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python test_slash_commands.py"
+args = "python3 test_slash_commands.py"
