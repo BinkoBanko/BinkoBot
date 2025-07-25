@@ -1,0 +1,40 @@
+BinkoBot - Official Invite URL
+===============================
+
+For server owners and public distribution:
+
+https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=432627025001041&scope=bot%20applications.commands
+
+This URL includes all permissions BinkoBot needs for full functionality:
+
+CORE FEATURES:
+- Slash commands (/affirm, /flirt, /touch, etc.)
+- Message sending and rich embeds
+- Emoji reactions and external emojis
+- File attachments
+
+MOOD & SOCIAL:
+- Role management for mood tracking (/setvibe)
+- Channel management for cozyspace creation
+- Thread support for organized conversations
+
+MUSIC & VOICE:
+- Voice channel connection
+- Audio playback and streaming
+- Voice activity detection
+
+MODERATION & MANAGEMENT:
+- Message management
+- Nickname management
+- Audit log access
+- Webhook management
+
+MODERN DISCORD:
+- Thread creation and management
+- External stickers
+- Embedded activities
+- Voice messages
+
+Server owners can deselect any permissions they don't want during the invite process.
+
+Last updated: 2025-07-25

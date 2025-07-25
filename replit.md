@@ -28,8 +28,9 @@ Preferred communication style: Simple, everyday language.
 - **CRITICAL**: "Unknown Integration" error caused by missing 'applications.commands' scope:
   - Root cause: Bot was invited with only 'bot' scope, not 'applications.commands'
   - Solution: In Discord Developer Portal OAuth2 URL Generator, check BOTH scopes
-  - Re-invite URL: https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=290272952052944&scope=bot%20applications.commands
-  - All bot code and 29 commands work correctly, just needs proper Discord permissions
+  - **Public Invite URL**: https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=432627025001041&scope=bot%20applications.commands
+  - Includes comprehensive permissions for all features (slash commands, roles, voice, moderation)
+  - Server owners can deselect unwanted permissions during invite process
 
 ## System Architecture
 
