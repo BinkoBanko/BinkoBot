@@ -25,6 +25,10 @@ Preferred communication style: Simple, everyday language.
   - Updated affirm and flirt modules to use send_private_or_public utility
   - Added proper error handling and timeout prevention
   - Touch and help modules already had correct response patterns
+- **CRITICAL**: "Unknown Integration" error requires bot re-invite with proper scopes:
+  - Updated invite URL: https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=290272952052944&scope=bot%20applications.commands
+  - Must include both 'bot' and 'applications.commands' scopes
+  - Includes all necessary permissions for full functionality
 
 ## System Architecture
 
