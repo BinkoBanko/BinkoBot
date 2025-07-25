@@ -5,3 +5,4 @@ BinkoBotProject/generated-icon.png
 *.env
 
 **/__pycache__/
+.pytest_cache/
