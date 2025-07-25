@@ -38,10 +38,15 @@ class Flirt(commands.Cog):
         interaction: discord.Interaction,
         mood: app_commands.Choice[str]
     ):
-        vibe = mood.value.lower()
-        line = self.pick_unique(self.flirts[vibe], vibe)
-        await interaction.response.defer(thinking=False, ephemeral=True)
-        await interaction.followup.send(f"*{line}*")
+        try:
+            vibe = mood.value.lower()
+            line = self.pick_unique(self.flirts[vibe], vibe)
+            await send_private_or_public(interaction, f"*{line}*")
+        except Exception as e:
+            if not interaction.response.is_done():
+                await interaction.response.send_message("Something went wrong with the flirt~ Try again!", ephemeral=True)
+            else:
+                await interaction.followup.send("Something went wrong with the flirt~ Try again!", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Flirt(bot))

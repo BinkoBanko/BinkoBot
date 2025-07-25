@@ -33,12 +33,16 @@ class Touch(commands.Cog):
         return random.choice(self.gestures.get(gesture, ["*...blinks and does nothing.*"]))
 
     async def send_touch(self, interaction: discord.Interaction, gesture: str, user: discord.User = None):
-        action = self.get_response(gesture)
-        if user:
-            msg = f"{user.mention} {action}"
-            await interaction.response.send_message(msg)
-        else:
-            await interaction.response.send_message(f"*{action}*", ephemeral=True)
+        try:
+            action = self.get_response(gesture)
+            if user:
+                msg = f"{user.mention} {action}"
+                await interaction.response.send_message(msg)
+            else:
+                await interaction.response.send_message(f"*{action}*", ephemeral=True)
+        except Exception as e:
+            if not interaction.response.is_done():
+                await interaction.response.send_message("Something went wrong with that touch~ Try again!", ephemeral=True)
 
     @app_commands.command(name="nuzzle", description="Give someone a soft nuzzle")
     @app_commands.describe(user="Who to nuzzle")
