@@ -101,6 +101,7 @@ initial_extensions = [
     "modules.mental_support",
     "modules.wholesome_chaos",
     "modules.nightmode",
+    "modules.enhanced_personality",
 ]
 
 # Optional Dev Guild for faster slash command registration

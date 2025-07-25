@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import random
 from utils.sender import send_private_or_public
+from modules.enhanced_personality import is_personality_enabled
 
 class Goodnight(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -14,12 +15,18 @@ class Goodnight(commands.Cog):
 
     @app_commands.command(name="goodnight", description="Send a cozy goodnight wish")
     async def goodnight(self, interaction: discord.Interaction):
-        line = random.choice(self.sleep_lines)
+        if is_personality_enabled():
+            line = random.choice(self.sleep_lines)
+        else:
+            line = "Goodnight."  # simpler message when personality is off
         await send_private_or_public(interaction, line)
 
     @app_commands.command(name="emojiattack", description="Unleash a chaotic emoji attack")
     async def emojiattack(self, interaction: discord.Interaction):
-        line = random.choice(self.attack_lines)
+        if is_personality_enabled():
+            line = random.choice(self.attack_lines)
+        else:
+            line = "💥"
         await send_private_or_public(interaction, line)
 
 async def setup(bot: commands.Bot):
