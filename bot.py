@@ -156,9 +156,9 @@ async def main():
     if os.getenv("REPLIT") == "1":
         keep_alive()
     
-    token = os.getenv("DISCORD_TOKEN")
+    token = os.getenv("DISCORD_BOT_TOKEN")
     if not token:
-        raise EnvironmentError("❌ DISCORD_TOKEN not found in environment variables.")
+        raise EnvironmentError("❌ DISCORD_BOT_TOKEN not found in environment variables.")
     
     await bot.start(token)
 
