@@ -10,6 +10,7 @@ from datetime import datetime
 class Analytics(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.analytics_enabled = os.getenv("ANALYTICS_ENABLED", "1").lower() not in ("0", "false")
         self.data_file = "data/analytics.json"
         os.makedirs("data", exist_ok=True)
         if not os.path.exists(self.data_file):
@@ -17,6 +18,8 @@ class Analytics(commands.Cog):
                 json.dump([], f)
 
     def log_usage(self, user_id, command_name):
+        if not self.analytics_enabled:
+            return
         with open(self.data_file, "r", encoding="utf-8") as f:
             logs = json.load(f)
 
@@ -31,11 +34,15 @@ class Analytics(commands.Cog):
 
     @commands.Cog.listener()
     async def on_app_command_completion(self, interaction: discord.Interaction, command: discord.app_commands.Command):
-        if interaction.user and command:
+        if self.analytics_enabled and interaction.user and command:
             self.log_usage(str(interaction.user.id), command.name)
 
     @app_commands.command(name="stats", description="View command usage statistics")
     async def stats(self, interaction: discord.Interaction):
+        if not self.analytics_enabled:
+            await interaction.response.send_message("Analytics collection is disabled.", ephemeral=True)
+            return
+
         if not os.path.exists(self.data_file):
             await interaction.response.send_message("No analytics data found.", ephemeral=True)
             return

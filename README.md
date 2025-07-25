@@ -29,6 +29,7 @@ BinkoBot is a modular Discord companion bot focused on cozy vibes and small comm
 - `DEV_GUILD_ID` – optional. If set, slash commands sync to this guild first for faster updates.
 - `REPLIT` – set to `1` when running on Replit so the keep-alive web server starts.
 - `LEGACY_MODE` – set to `1` to enable some legacy prefix commands such as `!ping`.
+- `ANALYTICS_ENABLED` – set to `0` to disable command usage analytics.
 
 You can export these variables in your shell or simply place them in an `.env` file.
 `main.py` automatically loads this file using `python-dotenv` on startup.
