@@ -27,3 +27,9 @@ sqlalchemy
 typing_extensions
 werkzeug
 yt-dlp
+discord.py
+flask
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
+python-dotenv

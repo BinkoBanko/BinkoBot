@@ -1,3 +1,4 @@
+modules = ["python-3.11"]
 [workflows]
 runButton = "Full System"
 
@@ -66,3 +67,10 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python3 test_slash_commands.py"
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
