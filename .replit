@@ -57,6 +57,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python3 test_bot_connection.py"
 
+[[workflows.workflow]]
+name = "Force Sync Commands"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 force_sync_commands.py"
+
 [nix]
 channel = "stable-25_05"
 packages = ["openssl", "postgresql"]
