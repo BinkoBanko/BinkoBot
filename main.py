@@ -48,6 +48,7 @@ initial_extensions = [
     "modules.help",
     "modules.responder",
     "modules.locked",
+    "modules.mental_support",
 ]
 
 # Optional Dev Guild for faster slash command registration
