@@ -7,7 +7,7 @@ class Personalization(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="personalize", description="Set your personal preferences")
-    async def personalize(self, interaction: discord.Interaction, setting: str = None):
+    async def personalize(self, interaction: discord.Interaction, setting: str = ""):
         await interaction.response.send_message("Personalization features coming soon!", ephemeral=True)
 
 async def setup(bot: commands.Bot):

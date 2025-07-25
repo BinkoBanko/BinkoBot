@@ -53,8 +53,5 @@ class Notes(commands.Cog):
         else:
             await interaction.response.send_message("No note found to delete.", ephemeral=True)
 
-    async def cog_app_command_group(self):
-        return [self.note_group]
-
 async def setup(bot: commands.Bot):
     await bot.add_cog(Notes(bot))

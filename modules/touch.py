@@ -32,7 +32,7 @@ class Touch(commands.Cog):
     def get_response(self, gesture):
         return random.choice(self.gestures.get(gesture, ["*...blinks and does nothing.*"]))
 
-    async def send_touch(self, interaction: discord.Interaction, gesture: str, user: discord.User = None):
+    async def send_touch(self, interaction: discord.Interaction, gesture: str, user: discord.User | None = None):
         try:
             action = self.get_response(gesture)
             if user:
@@ -46,22 +46,22 @@ class Touch(commands.Cog):
 
     @app_commands.command(name="nuzzle", description="Give someone a soft nuzzle")
     @app_commands.describe(user="Who to nuzzle")
-    async def nuzzle(self, interaction: discord.Interaction, user: discord.User = None):
+    async def nuzzle(self, interaction: discord.Interaction, user: discord.User | None = None):
         await self.send_touch(interaction, "nuzzle", user)
 
     @app_commands.command(name="tailwrap", description="Wrap your tail around someone")
     @app_commands.describe(user="Who to tailwrap")
-    async def tailwrap(self, interaction: discord.Interaction, user: discord.User = None):
+    async def tailwrap(self, interaction: discord.Interaction, user: discord.User | None = None):
         await self.send_touch(interaction, "tailwrap", user)
 
     @app_commands.command(name="kiss", description="Send a kiss")
     @app_commands.describe(user="Who to kiss")
-    async def kiss(self, interaction: discord.Interaction, user: discord.User = None):
+    async def kiss(self, interaction: discord.Interaction, user: discord.User | None = None):
         await self.send_touch(interaction, "kiss", user)
 
     @app_commands.command(name="pin", description="Pin someone (playfully)")
     @app_commands.describe(user="Who to pin")
-    async def pin(self, interaction: discord.Interaction, user: discord.User = None):
+    async def pin(self, interaction: discord.Interaction, user: discord.User | None = None):
         await self.send_touch(interaction, "pin", user)
 
 async def setup(bot: commands.Bot):

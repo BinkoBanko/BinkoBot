@@ -44,7 +44,9 @@ class Mood(commands.Cog):
 
         if interaction.guild:
             guild = interaction.guild
-            member = interaction.user
+            member = await guild.fetch_member(interaction.user.id)
+            if not member:
+                return
 
             role = discord.utils.get(guild.roles, name=vibe)
             if not role:

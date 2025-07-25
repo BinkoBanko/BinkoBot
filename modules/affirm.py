@@ -15,7 +15,7 @@ class Affirm(commands.Cog):
 
     @app_commands.command(name="affirm", description="Send a vibe-based affirmation.")
     @app_commands.describe(vibe="Choose a vibe: soft or chaotic (optional)")
-    async def affirm(self, interaction: discord.Interaction, vibe: str = None):
+    async def affirm(self, interaction: discord.Interaction, vibe: str = ""):
         try:
             if vibe == "chaotic":
                 msg = random.choice(self.chaotic)
