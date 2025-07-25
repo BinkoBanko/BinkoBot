@@ -62,3 +62,6 @@ class NightMode(commands.Cog):
     async def cog_app_command_group(self):
         return [self.night_group]
 
+async def setup(bot: commands.Bot):
+    await bot.add_cog(NightMode(bot))
+

@@ -73,29 +73,30 @@ async def check_nightmode(ctx) -> bool:
 
 # Extension modules (Cogs)
 initial_extensions = [
-    "modules.analytics",
-    "modules.flirt",
-    "modules.note",
-    "modules.playlist",
-    "modules.comfort",
-    "modules.affirm",
-    "modules.dailyhype",
-    "modules.nsfw",
-    "modules.mood_with_roles",
-    "modules.touch",
-    "modules.lore",
-    "modules.goodnight",
-    "modules.privacy",
-    "modules.dm_toggle",
-    "modules.cozyspace",
-    "modules.help",
-    "modules.music_player",
-    "modules.responder",
-    "modules.locked",
-    "modules.mental_support",
-    "modules.wholesome_chaos",
-    "modules.nightmode",
-    "modules.enhanced_personality",
+    "modules.affirm",        # Affirmations and encouragement
+    "modules.flirt",         # Flirt commands
+    "modules.touch",         # Touch interactions
+    "modules.goodnight",     # Sleep and goodnight wishes
+    "modules.comfort",       # Comforting responses
+    "modules.mood_with_roles", # Mood tracking with Discord roles
+    "modules.mental_support", # Mental health support
+    "modules.dailyhype",     # Daily motivation
+    "modules.help",          # Help command
+    "modules.cozyspace",     # Cozy space creation
+    "modules.wholesome_chaos", # Wholesome chaos mode
+    "modules.music_player",  # Music player functionality
+    "modules.personalization", # User personalization
+    "modules.privacy",       # Privacy controls
+    "modules.dm_toggle",     # DM preference toggle
+    "modules.note",          # User notes system
+    "modules.nightmode",     # Night mode settings
+    "modules.nsfw",          # NSFW content toggle
+    "modules.playlist",      # Music playlists
+    "modules.analytics",     # Analytics collection
+    "modules.lore",          # Bot lore system
+    "modules.responder",     # Auto responses
+    "modules.enhanced_personality", # Personality enhancements
+    "modules.locked"         # Locked/restricted commands
 ]
 
 # Optional Dev Guild for faster slash command registration
@@ -152,24 +153,32 @@ async def load_extension_safe(ext):
     try:
         await bot.load_extension(ext)
         
-        # Get the cog that was just loaded
+        # Get the cog that was just loaded - try different name patterns
         cog_name = ext.split('.')[-1]
-        cog_classes = [cog_name.title(), cog_name.capitalize(), cog_name.upper()]
+        possible_names = [
+            cog_name.title(),           # affirm -> Affirm  
+            cog_name.capitalize(),      # affirm -> Affirm
+            cog_name.replace('_', ''),  # mood_with_roles -> moodwithroles
+            cog_name.replace('_', ' ').title().replace(' ', ''), # mood_with_roles -> MoodWithRoles
+            cog_name.upper(),           # affirm -> AFFIRM
+            cog_name                    # affirm -> affirm
+        ]
         
         loaded_cog = None
-        for class_name in cog_classes:
-            loaded_cog = bot.get_cog(class_name)
+        for name in possible_names:
+            loaded_cog = bot.get_cog(name)
             if loaded_cog:
                 break
         
         if loaded_cog:
             # Count app commands in this cog
             app_commands = [cmd for cmd in loaded_cog.get_app_commands()]
-            logging.info(f"✔️ Loaded {ext} with {len(app_commands)} slash commands")
+            logging.info(f"✔️ Loaded {ext} -> {loaded_cog.__class__.__name__} ({len(app_commands)} commands)")
             for cmd in app_commands:
-                logging.info(f"   /{cmd.name}")
+                logging.info(f"   /{cmd.name}: {cmd.description}")
         else:
-            logging.info(f"✔️ Loaded {ext} (no slash commands found)")
+            # Still successful load, just no cog found (might be function-based)
+            logging.info(f"✔️ Loaded {ext} (cog class not detected)")
         
     except Exception as e:
         logging.error(f"❌ Failed to load {ext}: {e}")
