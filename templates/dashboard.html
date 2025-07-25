@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BinkoBot{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-1">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Welcome back, {{ user.username }}!</p>
+                </div>
+                <div>
+                    <span class="badge bg-primary fs-6">{{ total_servers }} Servers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fa-2x text-primary mb-3"></i>
+                    <h3 class="mb-1">{{ total_servers }}</h3>
+                    <p class="text-muted mb-0">Total Servers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-heart fa-2x text-danger mb-3"></i>
+                    <h3 class="mb-1">{{ avg_vibe }}</h3>
+                    <p class="text-muted mb-0">Avg Vibe Score</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                    <h3 class="mb-1" id="active-servers">-</h3>
+                    <p class="text-muted mb-0">Active Servers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-info mb-3"></i>
+                    <h3 class="mb-1" id="total-members">-</h3>
+                    <p class="text-muted mb-0">Total Members</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servers Grid -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-4">
+                <i class="fas fa-list me-2"></i>
+                Your Servers
+            </h2>
+        </div>
+    </div>
+
+    {% if servers %}
+    <div class="row g-4">
+        {% for server_data in servers %}
+        {% set server = server_data.server %}
+        {% set vibe_score = server_data.vibe_score %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            {% if server.icon %}
+                            <img src="https://cdn.discordapp.com/icons/{{ server.discord_id }}/{{ server.icon }}.png" 
+                                 alt="{{ server.name }}" class="rounded" width="48" height="48">
+                            {% else %}
+                            <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 48px; height: 48px;">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{ server.name }}</h5>
+                            <small class="text-muted">
+                                {% if server.member_count %}
+                                    {{ server.member_count }} members
+                                {% else %}
+                                    Members: Unknown
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    {% if vibe_score %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-medium">Vibe Score</span>
+                            <span class="badge bg-{% if vibe_score.overall_score >= 70 %}success{% elif vibe_score.overall_score >= 40 %}warning{% else %}danger{% endif %}">
+                                {{ vibe_score.overall_score }}
+                            </span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar bg-{% if vibe_score.overall_score >= 70 %}success{% elif vibe_score.overall_score >= 40 %}warning{% else %}danger{% endif %}" 
+                                 style="width: {{ vibe_score.overall_score }}%"></div>
+                        </div>
+                        
+                        <div class="row g-2 small">
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Activity:</span>
+                                    <span>{{ vibe_score.activity_score }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Positivity:</span>
+                                    <span>{{ vibe_score.positivity_score }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Engagement:</span>
+                                    <span>{{ vibe_score.engagement_score }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Growth:</span>
+                                    <span>{{ vibe_score.growth_score }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <p class="mb-0">No vibe data yet</p>
+                            <small>Click "View Details" to analyze</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('dashboard.server_detail', server_id=server.id) }}" 
+                           class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="fas fa-eye me-1"></i>
+                            View Details
+                        </a>
+                        <a href="{{ url_for('dashboard.refresh_server', server_id=server.id) }}" 
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-sync-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fab fa-discord fa-3x text-muted mb-3"></i>
+                    <h4 class="mb-3">No Discord Servers Found</h4>
+                    <p class="text-muted mb-4">
+                        It looks like you don't have access to any Discord servers, or BinkoBot 
+                        doesn't have permission to see them.
+                    </p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                        <i class="fas fa-sync-alt me-2"></i>
+                        Refresh Discord Connection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
