@@ -106,51 +106,45 @@ DEV_GUILD_ID = os.getenv("DEV_GUILD_ID")
 async def on_ready():
     logging.info(f"✅ Logged in as {bot.user}")
     logging.info(f"Connected to {len(bot.guilds)} guilds")
-    
+
     # Load all extensions first
     await load_all_extensions()
-    
-    # Wait for all cogs to fully initialize
-    await asyncio.sleep(3)
-    
+
+    # Wait for cogs to finish loading and registering commands
+    await asyncio.sleep(2)
+
     try:
-        # Wait longer for modules to fully load
-        await asyncio.sleep(5)
-        
-        # Force clear all existing commands
-        logging.info("🧹 Clearing existing commands...")
-        bot.tree.clear_commands(guild=None)
-        
-        # Wait for clear to take effect
-        await asyncio.sleep(2)
-        
-        # Get all commands from loaded cogs
+        # Check command registration status
         all_commands = bot.tree.get_commands()
-        logging.info(f"🔍 Found {len(all_commands)} commands ready to sync")
-        
-        # List what we found before syncing
-        for cmd in all_commands:
-            logging.info(f"📝 Command ready: /{cmd.name} - {cmd.description}")
-        
-        if len(all_commands) == 0:
-            logging.warning("⚠️ No commands found to sync - checking cogs...")
+        logging.info(f"🔍 Command tree has {len(all_commands)} commands registered")
+
+        # List commands that are ready to sync
+        if len(all_commands) > 0:
+            logging.info("📝 Commands ready for sync:")
+            for cmd in all_commands:
+                logging.info(f"   /{cmd.name}: {cmd.description}")
+        else:
+            # Diagnose why no commands are registered
+            logging.warning("⚠️ No commands in tree - diagnosing cog registration...")
             for cog_name, cog in bot.cogs.items():
                 app_commands = cog.get_app_commands()
-                logging.info(f"   Cog {cog_name}: {len(app_commands)} commands")
-                for cmd in app_commands:
-                    logging.info(f"     /{cmd.name}: {cmd.description}")
-        
-        # Sync globally (this is the most important part)
-        logging.info("🚀 Starting global command sync...")
+                if len(app_commands) > 0:
+                    logging.info(f"   {cog_name}: {len(app_commands)} commands available")
+                    # Commands exist in cogs but not in tree - this indicates a registration issue
+                    for cmd in app_commands:
+                        logging.info(f"     Unregistered: /{cmd.name}")
+
+        # Sync commands (don't clear first - let Discord handle the diff)
+        logging.info("🚀 Syncing commands with Discord...")
         synced = await bot.tree.sync()
-        logging.info(f"✅ Successfully synced {len(synced)} slash commands globally")
+        logging.info(f"✅ Successfully synced {len(synced)} slash commands")
 
         # Verify what was actually synced
         logging.info("📋 Synced commands:")
         for i, command in enumerate(synced, 1):
             desc = getattr(command, 'description', None) or 'No description'
             logging.info(f"  {i}. /{command.name} – {desc}")
-            
+
         # Additional verification - check if commands are accessible via tree
         tree_commands = bot.tree.get_commands()
         logging.info(f"🌳 Command tree contains {len(tree_commands)} commands")
@@ -163,7 +157,7 @@ async def on_ready():
         logging.error(f"❌ Critical slash command sync error: {e}")
         import traceback
         logging.error(traceback.format_exc())
-        
+
         # Try alternative sync method with error handling
         try:
             logging.info("🔄 Attempting alternative sync method...")
@@ -182,7 +176,7 @@ async def load_all_extensions():
 async def load_extension_safe(ext):
     try:
         await bot.load_extension(ext)
-        
+
         # Get the cog that was just loaded - try different name patterns
         cog_name = ext.split('.')[-1]
         possible_names = [
@@ -193,13 +187,13 @@ async def load_extension_safe(ext):
             cog_name.upper(),           # affirm -> AFFIRM
             cog_name                    # affirm -> affirm
         ]
-        
+
         loaded_cog = None
         for name in possible_names:
             loaded_cog = bot.get_cog(name)
             if loaded_cog:
                 break
-        
+
         if loaded_cog:
             # Count app commands in this cog
             app_commands = [cmd for cmd in loaded_cog.get_app_commands()]
@@ -209,7 +203,7 @@ async def load_extension_safe(ext):
         else:
             # Still successful load, just no cog found (might be function-based)
             logging.info(f"✔️ Loaded {ext} (cog class not detected)")
-        
+
     except Exception as e:
         logging.error(f"❌ Failed to load {ext}: {e}")
         import traceback
@@ -232,15 +226,15 @@ async def main():
     # Start keep-alive service for Replit
     if os.getenv("REPLIT") == "1":
         keep_alive()
-    
+
     token = os.getenv("DISCORD_BOT_TOKEN")
     if not token:
         raise EnvironmentError("❌ DISCORD_BOT_TOKEN not found in environment variables.")
-    
+
     # Validate token format
     if len(token.strip()) < 50 or '.' not in token:
         raise EnvironmentError("❌ DISCORD_BOT_TOKEN appears to be invalid or corrupted.")
-    
+
     try:
         await bot.start(token.strip())
     except discord.errors.LoginFailure:
