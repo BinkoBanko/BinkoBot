@@ -65,6 +65,7 @@ initial_extensions = [
     "modules.privacy",
     "modules.dm_toggle",
     "modules.help",
+    "modules.music_player",
     "modules.responder",
     "modules.locked",
     "modules.mental_support",

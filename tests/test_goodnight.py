@@ -3,8 +3,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from modules.goodnight import Goodnight
-from discord import app_commands
+from modules.goodnight import Goodnight  # noqa: E402
+from discord import app_commands  # noqa: E402
 
 class DummyBot:
     pass
