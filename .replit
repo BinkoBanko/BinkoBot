@@ -1,11 +1,68 @@
 [workflows]
-runButton = "Start Bot"
+runButton = "Full System"
 
 [[workflows.workflow]]
-name = "Start Bot"
+name = "Full System"
+author = 42135292
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 main.py"
+
+[[workflows.workflow]]
+name = "Bot Only"
 author = 42135292
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 main.py"
+args = "python3 bot.py"
+
+[[workflows.workflow]]
+name = "Web Dashboard Only"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 app.py"
+
+[[workflows.workflow]]
+name = "Test & Debug"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_bot_connection.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_module_loading.py"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 force_sync_commands.py"
+
+[[workflows.workflow]]
+name = "Run Tests"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 -m pytest tests/ -v"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_all_modules.py"
+
+[[workflows.workflow]]
+name = "Quick Bot Test"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_slash_commands.py"
