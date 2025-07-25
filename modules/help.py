@@ -17,7 +17,7 @@ class Help(commands.Cog):
 
         embed.add_field(
             name="💖 Affirmations",
-            value="`/affirm`, `/dailyhype`",
+            value="`/affirm`, `/dailyhype`, `/goodnight`, `/emojiattack`",
             inline=False
         )
         embed.add_field(

@@ -43,6 +43,7 @@ initial_extensions = [
     "modules.mood_with_roles",
     "modules.touch",
     "modules.lore",
+    "modules.goodnight",
     "modules.privacy",
     "modules.dm_toggle",
     "modules.help",
