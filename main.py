@@ -40,14 +40,20 @@ def start_bot_background():
     """Start Discord bot in background thread when imported by gunicorn"""
     if os.getenv("RUN_MODE", "both") in ["both", "bot"]:
         try:
+            # Only start if we have a valid token
+            token = os.getenv("DISCORD_BOT_TOKEN")
+            if not token:
+                print("❌ DISCORD_BOT_TOKEN not found - skipping bot startup")
+                return
+            
             bot_thread = threading.Thread(target=run_bot, daemon=True)
             bot_thread.start()
             print("✅ Discord bot started in background thread")
         except Exception as e:
             print(f"❌ Failed to start Discord bot: {e}")
 
-# Only start bot automatically if not explicitly disabled
-if os.getenv("DISABLE_AUTO_BOT") != "1":
+# Only start bot automatically if not explicitly disabled and we're not in development
+if os.getenv("DISABLE_AUTO_BOT") != "1" and __name__ != "__main__":
     start_bot_background()
 
 # For gunicorn - export the Flask app
