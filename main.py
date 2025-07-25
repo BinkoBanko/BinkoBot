@@ -33,6 +33,17 @@ if __name__ == "__main__":
         # Run bot in main thread
         asyncio.run(bot_main())
 
-# For gunicorn (web-only mode)
-# This allows gunicorn to import the Flask app
+# For gunicorn - start Discord bot in background when web app starts
+import atexit
+
+def start_bot_background():
+    """Start Discord bot in background thread when imported by gunicorn"""
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    print("Discord bot started in background thread")
+
+# Start bot when imported by gunicorn
+start_bot_background()
+
+# For gunicorn - export the Flask app
 from app import app
