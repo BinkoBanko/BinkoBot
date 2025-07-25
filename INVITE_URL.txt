@@ -1,11 +1,18 @@
-BinkoBot - Official Invite URL
-===============================
+BinkoBot - Official Invite URLs
+==============================
 
-For server owners and public distribution:
+Choose the permission level that fits your server:
 
-https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=432627025001041&scope=bot%20applications.commands
+RECOMMENDED (All features, safe for public):
+https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=1227061024030776&scope=bot%20applications.commands
 
-This URL includes all permissions BinkoBot needs for full functionality:
+MAXIMUM (Everything including moderation):
+https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=2455024109338632&scope=bot%20applications.commands
+
+BASIC (Just slash commands and messaging):
+https://discord.com/api/oauth2/authorize?client_id=1367271562142683349&permissions=2147551296&scope=bot%20applications.commands
+
+This includes all permissions BinkoBot needs for full functionality:
 
 CORE FEATURES:
 - Slash commands (/affirm, /flirt, /touch, etc.)
