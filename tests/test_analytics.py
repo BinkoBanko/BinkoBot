@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import modules.analytics as analytics
+import modules.analytics as analytics  # noqa: E402
 
 class DummyBot:
     pass

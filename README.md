@@ -30,6 +30,8 @@ BinkoBot is a modular Discord companion bot focused on cozy vibes and small comm
 - `REPLIT` – set to `1` when running on Replit so the keep-alive web server starts.
 - `LEGACY_MODE` – set to `1` to enable some legacy prefix commands such as `!ping`.
 - `ANALYTICS_ENABLED` – set to `0` to disable command usage analytics.
+- `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` – optional. Required if you
+  want to play Spotify track links through the new music player.
 
 You can export these variables in your shell or simply place them in an `.env` file.
 `main.py` automatically loads this file using `python-dotenv` on startup.
@@ -65,5 +67,16 @@ python main.py
 ```
 
 The bot will register slash commands on startup. If `DEV_GUILD_ID` is provided, commands appear in that guild immediately; otherwise, global registration may take up to an hour.
+
+## Voice & Music
+
+BinkoBot can join a voice channel and play music from YouTube links, search terms, or Spotify track URLs. Spotify support requires the `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` environment variables. You also need `ffmpeg` installed on your system for audio playback.
+
+Commands:
+
+- `/join` – Have the bot join your current voice channel.
+- `/play <query>` – Play a YouTube link, search term, or Spotify track.
+- `/stop` – Stop the current track.
+- `/leave` – Disconnect from the voice channel.
 
 See `privacy_policy.md` for details on how the bot handles data.

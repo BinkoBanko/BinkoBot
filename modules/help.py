@@ -42,7 +42,7 @@ class Help(commands.Cog):
         )
         embed.add_field(
             name="🎧 Tools & Stats",
-            value="`/music`, `/stats`, `/help`",
+            value="`/join`, `/play`, `/stop`, `/leave`, `/music`, `/stats`, `/help`",
             inline=False
         )
 
