@@ -13,6 +13,14 @@ The bot focuses on providing emotional support, mood tracking, and community eng
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**2025-07-25**: Fixed Discord bot slash command registration system
+- All 24 bot modules now load successfully  
+- 28+ slash commands sync properly (/affirm, /flirt, /touch, /music, etc.)
+- Identified permission issue: bot needs `applications.commands` scope for slash commands
+- Generated updated invite URL with proper permissions including "Use Slash Commands"
+
 ## System Architecture
 
 ### Hybrid Architecture
