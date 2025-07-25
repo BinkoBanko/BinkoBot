@@ -104,27 +104,44 @@ DEV_GUILD_ID = os.getenv("DEV_GUILD_ID")
 @bot.event
 async def on_ready():
     logging.info(f"✅ Logged in as {bot.user}")
+    logging.info(f"Connected to {len(bot.guilds)} guilds")
+    
+    # Load all extensions first
     await load_all_extensions()
-
+    
+    # Wait a moment for cogs to fully initialize
+    await asyncio.sleep(2)
+    
     try:
+        # Clear existing commands first
+        bot.tree.clear_commands(guild=None)
+        
+        # Get all commands from loaded cogs
+        all_commands = bot.tree.get_commands()
+        logging.info(f"Found {len(all_commands)} commands to sync")
+        
+        # Sync to dev guild first if specified (faster)
         if DEV_GUILD_ID:
             dev_guild = discord.Object(id=int(DEV_GUILD_ID))
+            # Copy commands to dev guild
+            for cmd in all_commands:
+                bot.tree.add_command(cmd, guild=dev_guild)
             dev_synced = await bot.tree.sync(guild=dev_guild)
-            logging.info(
-                f"🔁 Slash commands synced to DEV_GUILD_ID {DEV_GUILD_ID}: {len(dev_synced)}"
-            )
-        bot.tree.clear_commands(guild=None)
+            logging.info(f"🔁 Synced {len(dev_synced)} slash commands to dev guild {DEV_GUILD_ID}")
+        
+        # Sync globally
         synced = await bot.tree.sync()
-        logging.info(
-            f"🔁 Slash commands forcibly re-synced globally: {len(synced)}"
-        )
+        logging.info(f"🔁 Synced {len(synced)} slash commands globally")
 
-        for command in bot.tree.get_commands():
+        # List all synced commands
+        for command in synced:
             desc = getattr(command, 'description', None) or 'No description'
-            logging.info(f"📋 Registered slash command: /{command.name} – {desc}")
+            logging.info(f"📋 /{command.name} – {desc}")
 
     except Exception as e:
         logging.error(f"⚠️ Slash command sync failed: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
 
 # Load extensions in parallel
 async def load_all_extensions():
@@ -134,9 +151,30 @@ async def load_all_extensions():
 async def load_extension_safe(ext):
     try:
         await bot.load_extension(ext)
-        logging.info(f"✔️ Loaded: {ext}")
+        
+        # Get the cog that was just loaded
+        cog_name = ext.split('.')[-1]
+        cog_classes = [cog_name.title(), cog_name.capitalize(), cog_name.upper()]
+        
+        loaded_cog = None
+        for class_name in cog_classes:
+            loaded_cog = bot.get_cog(class_name)
+            if loaded_cog:
+                break
+        
+        if loaded_cog:
+            # Count app commands in this cog
+            app_commands = [cmd for cmd in loaded_cog.get_app_commands()]
+            logging.info(f"✔️ Loaded {ext} with {len(app_commands)} slash commands")
+            for cmd in app_commands:
+                logging.info(f"   /{cmd.name}")
+        else:
+            logging.info(f"✔️ Loaded {ext} (no slash commands found)")
+        
     except Exception as e:
         logging.error(f"❌ Failed to load {ext}: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
 
 @bot.listen("on_command")
 async def delete_command_message(ctx):
