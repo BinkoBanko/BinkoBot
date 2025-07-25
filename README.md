@@ -51,9 +51,10 @@ Each key in this file tweaks a piece of BinkoBot's behavior:
   purged automatically.
 - `allow_lewd_in_cozyspace_only` – Restricts lewd commands to cozyspace
   channels and DMs.
-- `logging.enabled` – Toggles log output to the console.
-- `logging.log_flags_only` – If enabled, only logs flagged events rather than
-  every message.
+- `logging.enabled` – When `false`, regular log messages are suppressed and only
+  warnings/errors are shown.
+- `logging.log_flags_only` – If `true`, only log records marked with
+  `extra={"flagged": True}` will be printed.
 
 ## Running the Bot
 

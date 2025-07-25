@@ -3,6 +3,7 @@ from discord.ext import commands
 import json
 import random
 import os
+import logging
 
 
 class MentalSupport(commands.Cog):
@@ -31,6 +32,10 @@ class MentalSupport(commands.Cog):
             return
 
         if self.contains_trigger(message.content):
+            logging.info(
+                f"Flagged mental health phrase from {message.author}: {message.content}",
+                extra={"flagged": True},
+            )
             reply = self.get_response()
 
             try:
