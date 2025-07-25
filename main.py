@@ -62,18 +62,14 @@ intents.message_content = True
 bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
 
 
-@bot.tree.check
-async def check_nightmode(interaction: discord.Interaction) -> bool:
-    if not interaction.guild:
+@bot.check
+async def check_nightmode(ctx) -> bool:
+    if not ctx.guild:
         return True
-    if not nightmode_enabled(interaction.guild.id):
+    if not nightmode_enabled(ctx.guild.id):
         return True
     if datetime.now().hour >= nightmode_hour:
-        if interaction.command and not interaction.command.qualified_name.startswith("nightmode"):
-            if not interaction.response.is_done():
-                await interaction.response.send_message("\U0001F319 Night mode is active.", ephemeral=True)
-            else:
-                await interaction.followup.send("\U0001F319 Night mode is active.", ephemeral=True)
+        if ctx.command and not ctx.command.qualified_name.startswith("nightmode"):
             return False
     return True
 
