@@ -53,6 +53,8 @@ Each key in this file tweaks a piece of BinkoBot's behavior:
   purged automatically.
 - `allow_lewd_in_cozyspace_only` – Restricts lewd commands to cozyspace
   channels and DMs.
+- `nightmode_hour` – Hour of day (0-23) after which non-essential commands are
+  blocked when night mode is enabled.
 - `logging.enabled` – When `false`, regular log messages are suppressed and only
   warnings/errors are shown.
 - `logging.log_flags_only` – If `true`, only log records marked with
