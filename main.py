@@ -70,6 +70,7 @@ initial_extensions = [
     "modules.responder",
     "modules.locked",
     "modules.mental_support",
+    "modules.wholesome_chaos",
 ]
 
 # Optional Dev Guild for faster slash command registration
