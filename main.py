@@ -64,6 +64,7 @@ initial_extensions = [
     "modules.goodnight",
     "modules.privacy",
     "modules.dm_toggle",
+    "modules.cozyspace",
     "modules.help",
     "modules.music_player",
     "modules.responder",
