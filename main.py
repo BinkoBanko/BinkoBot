@@ -46,6 +46,11 @@ def start_bot_background():
                 print("❌ DISCORD_BOT_TOKEN not found - skipping bot startup")
                 return
             
+            # Validate token format (should be around 70 characters and contain dots)
+            if len(token) < 50 or '.' not in token:
+                print("❌ DISCORD_BOT_TOKEN appears invalid - skipping bot startup")
+                return
+            
             bot_thread = threading.Thread(target=run_bot, daemon=True)
             bot_thread.start()
             print("✅ Discord bot started in background thread")

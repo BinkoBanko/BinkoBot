@@ -114,12 +114,15 @@ async def on_ready():
     await asyncio.sleep(3)
     
     try:
+        # Wait longer for modules to fully load
+        await asyncio.sleep(5)
+        
         # Force clear all existing commands
         logging.info("🧹 Clearing existing commands...")
         bot.tree.clear_commands(guild=None)
         
         # Wait for clear to take effect
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         
         # Get all commands from loaded cogs
         all_commands = bot.tree.get_commands()
@@ -128,6 +131,14 @@ async def on_ready():
         # List what we found before syncing
         for cmd in all_commands:
             logging.info(f"📝 Command ready: /{cmd.name} - {cmd.description}")
+        
+        if len(all_commands) == 0:
+            logging.warning("⚠️ No commands found to sync - checking cogs...")
+            for cog_name, cog in bot.cogs.items():
+                app_commands = cog.get_app_commands()
+                logging.info(f"   Cog {cog_name}: {len(app_commands)} commands")
+                for cmd in app_commands:
+                    logging.info(f"     /{cmd.name}: {cmd.description}")
         
         # Sync globally (this is the most important part)
         logging.info("🚀 Starting global command sync...")
@@ -144,18 +155,24 @@ async def on_ready():
         tree_commands = bot.tree.get_commands()
         logging.info(f"🌳 Command tree contains {len(tree_commands)} commands")
 
+    except discord.errors.Forbidden as e:
+        logging.error(f"❌ Permission denied during sync - bot may lack 'applications.commands' scope: {e}")
+    except discord.errors.HTTPException as e:
+        logging.error(f"❌ HTTP error during sync (rate limit or API issue): {e}")
     except Exception as e:
         logging.error(f"❌ Critical slash command sync error: {e}")
         import traceback
         logging.error(traceback.format_exc())
         
-        # Try alternative sync method
+        # Try alternative sync method with error handling
         try:
             logging.info("🔄 Attempting alternative sync method...")
-            await bot.tree.sync()
-            logging.info("✅ Alternative sync completed")
+            await asyncio.sleep(3)
+            synced = await bot.tree.sync()
+            logging.info(f"✅ Alternative sync completed - {len(synced)} commands")
         except Exception as e2:
             logging.error(f"❌ Alternative sync also failed: {e2}")
+            logging.error("🔧 Try checking: 1) Bot token validity 2) Bot has 'applications.commands' scope 3) Bot permissions in server")
 
 # Load extensions in parallel
 async def load_all_extensions():
@@ -220,7 +237,24 @@ async def main():
     if not token:
         raise EnvironmentError("❌ DISCORD_BOT_TOKEN not found in environment variables.")
     
-    await bot.start(token)
+    # Validate token format
+    if len(token.strip()) < 50 or '.' not in token:
+        raise EnvironmentError("❌ DISCORD_BOT_TOKEN appears to be invalid or corrupted.")
+    
+    try:
+        await bot.start(token.strip())
+    except discord.errors.LoginFailure:
+        logging.error("❌ Invalid bot token - please check your DISCORD_BOT_TOKEN")
+        raise
+    except discord.errors.ConnectionClosed as e:
+        if e.code == 4004:
+            logging.error("❌ Bot token authentication failed (4004) - token may be invalid or expired")
+        else:
+            logging.error(f"❌ Connection closed: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"❌ Unexpected bot startup error: {e}")
+        raise
 
 if __name__ == "__main__":
     asyncio.run(main())

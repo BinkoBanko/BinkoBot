@@ -47,6 +47,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python3 debug_bot.py"
 
+[[workflows.workflow]]
+name = "Test Bot Connection"
+author = 42135292
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_bot_connection.py"
+
 [nix]
 channel = "stable-25_05"
 packages = ["openssl", "postgresql"]
