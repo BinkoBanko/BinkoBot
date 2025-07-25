@@ -1,6 +1,7 @@
 modules = ["python-3.11"]
+
 [workflows]
-runButton = "Full System"
+runButton = "Test & Debug"
 
 [[workflows.workflow]]
 name = "Full System"
