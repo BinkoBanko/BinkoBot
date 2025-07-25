@@ -24,41 +24,83 @@ class Mood(commands.Cog):
         with open(self.vibes_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-    @app_commands.command(name="setvibe", description="Set your current mood/vibe")
-    @app_commands.describe(vibe="Choose your vibe (soft, lewd, sad, etc.)")
+    @app_commands.command(name="setvibe", description="Set your current mood and get a matching role")
     async def setvibe(self, interaction: discord.Interaction, vibe: str):
-        vibe = vibe.lower()
-        if vibe not in self.valid_vibes:
-            await interaction.response.send_message(
-                f"❌ Invalid vibe. Try one of: {', '.join(self.valid_vibes)}", ephemeral=True
+        # Respond immediately to prevent timeout
+        await interaction.response.defer()
+
+        if not interaction.guild:
+            await interaction.followup.send("❌ This command only works in servers!", ephemeral=True)
+            return
+
+        user_id = str(interaction.user.id)
+        guild_id = str(interaction.guild.id)
+
+        # Find matching vibe category
+        matched_category = None
+        for category, keywords in self.get_mood_keywords().items():
+            if any(keyword.lower() in vibe.lower() for keyword in keywords):
+                matched_category = category
+                break
+
+        if not matched_category:
+            await interaction.followup.send(
+                f"❌ Couldn't match '{vibe}' to a mood! Try words like: happy, sad, excited, chill, chaotic, sleepy",
+                ephemeral=True
             )
             return
 
-        uid = str(interaction.user.id)
-        data = self.load_vibes()
-        data[uid] = {
-            "vibe": vibe,
-            "last_set": datetime.utcnow().isoformat()
-        }
-        self.save_vibes(data)
+        # Save user's vibe
+        self.save_user_vibe(user_id, guild_id, matched_category, vibe)
 
-        if interaction.guild:
-            guild = interaction.guild
-            member = await guild.fetch_member(interaction.user.id)
-            if not member:
-                return
+        # Try to add role if possible
+        try:
+            role_name = f"🌟 {matched_category.title()}"
+            role = discord.utils.get(interaction.guild.roles, name=role_name)
 
-            role = discord.utils.get(guild.roles, name=vibe)
             if not role:
-                role = await guild.create_role(name=vibe, reason="Created vibe role dynamically")
+                # Try to create role
+                try:
+                    role = await interaction.guild.create_role(
+                        name=role_name,
+                        color=self.get_role_color(matched_category),
+                        mentionable=False
+                    )
+                    logging.info(f"Created new role: {role_name}")
+                except discord.Forbidden:
+                    await interaction.followup.send(
+                        f"✨ Vibe set to **{matched_category}**! (Couldn't create role - missing permissions)",
+                        ephemeral=True
+                    )
+                    return
 
-            roles_to_remove = [r for r in member.roles if r.name in self.valid_vibes and r != role]
-            await member.remove_roles(*roles_to_remove, reason="Switching vibe role")
-            await member.add_roles(role, reason="Assigned new vibe role")
+            # Remove old mood roles
+            mood_roles = [r for r in interaction.user.roles if r.name.startswith("🌟 ")]
+            for old_role in mood_roles:
+                try:
+                    await interaction.user.remove_roles(old_role)
+                except discord.Forbidden:
+                    pass
 
-        await interaction.response.send_message(
-            f"🌟 Your vibe has been set to **{vibe}**!", ephemeral=True
-        )
+            # Add new role
+            await interaction.user.add_roles(role)
+
+            await interaction.followup.send(
+                f"✨ Vibe set to **{matched_category}**! You now have the {role.mention} role! 🎭",
+                ephemeral=True
+            )
+
+        except discord.Forbidden:
+            await interaction.followup.send(
+                f"✨ Vibe set to **{matched_category}**! (Couldn't manage roles - missing permissions)",
+                ephemeral=True
+            )
+        except Exception as e:
+            logging.error(f"Error in setvibe: {e}")
+            await interaction.followup.send(
+                f"✨ Vibe set to **{matched_category}**! (Role error: {str(e)})",
+                ephemeral=True
+            )
 
 async def setup(bot: commands.Bot):
     print("✅ mood_with_roles setup() called (auto-sync style)")

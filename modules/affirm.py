@@ -17,6 +17,9 @@ class Affirm(commands.Cog):
     @app_commands.describe(vibe="Choose a vibe: soft or chaotic (optional)")
     async def affirm(self, interaction: discord.Interaction, vibe: str = ""):
         try:
+            # Respond immediately to prevent timeout
+            await interaction.response.defer()
+
             if vibe == "chaotic":
                 msg = random.choice(self.chaotic)
             else:

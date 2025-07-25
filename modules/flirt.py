@@ -25,28 +25,62 @@ class Flirt(commands.Cog):
             self.recent[vibe].pop(0)
         return pick
 
-    @app_commands.command(name="flirt", description="Send a flirt based on your mood")
-    @app_commands.choices(
-        mood=[
-            app_commands.Choice(name="soft", value="soft"),
-            app_commands.Choice(name="tease", value="tease"),
-            app_commands.Choice(name="spicy", value="spicy")
-        ]
-    )
-    async def flirt(
-        self,
-        interaction: discord.Interaction,
-        mood: app_commands.Choice[str]
-    ):
+    @app_commands.command(name="flirt", description="Get a playful flirty message")
+    async def flirt(self, interaction: discord.Interaction, intensity: str = "mild"):
         try:
-            vibe = mood.value.lower()
-            line = self.pick_unique(self.flirts[vibe], vibe)
-            await send_private_or_public(interaction, f"*{line}*")
+            # Respond immediately to prevent timeout
+            await interaction.response.defer()
+
+            user_id = str(interaction.user.id)
+
+            # Load flirts
+            try:
+                with open("data/flirts.json", "r", encoding="utf-8") as f:
+                    flirt_data = json.load(f)
+            except FileNotFoundError:
+                flirt_data = {"mild": ["You're looking cute today! 💕"]}
+
+            # Get flirts for intensity level
+            available_flirts = flirt_data.get(intensity, flirt_data.get("mild", ["Hey there, cutie! 😘"]))
+
+            if not available_flirts:
+                await interaction.followup.send("❌ No flirts available for that intensity!", ephemeral=True)
+                return
+
+            # Pick random flirt
+            flirt_message = random.choice(available_flirts)
+
+            # Personalize it
+            personalized = flirt_message.replace("{user}", interaction.user.display_name)
+
+            # Check DM preferences
+            try:
+                with open("data/dm_preferences.json", "r", encoding="utf-8") as f:
+                    dm_prefs = json.load(f)
+
+                if dm_prefs.get(user_id, False):
+                    # Send DM
+                    try:
+                        await interaction.user.send(personalized)
+                        await interaction.followup.send("💝 Sent you a little something in DMs~", ephemeral=True)
+                    except discord.Forbidden:
+                        await interaction.followup.send(personalized)
+                else:
+                    # Send publicly
+                    await interaction.followup.send(personalized)
+            except FileNotFoundError:
+                # Default to public
+                await interaction.followup.send(personalized)
+
         except Exception as e:
-            if not interaction.response.is_done():
-                await interaction.response.send_message("Something went wrong with the flirt~ Try again!", ephemeral=True)
-            else:
-                await interaction.followup.send("Something went wrong with the flirt~ Try again!", ephemeral=True)
+            logging.error(f"Error in flirt command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Something went wrong with the flirting!", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Something went wrong with the flirting!", ephemeral=True)
+            except:
+                pass
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Flirt(bot))
