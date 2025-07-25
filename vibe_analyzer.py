@@ -60,14 +60,13 @@ class VibeAnalyzer:
             )
             
             # Create or update vibe score
-            vibe_score = VibeScore(
-                server_id=server_id,
-                overall_score=round(overall_score, 2),
-                activity_score=round(activity_score, 2),
-                positivity_score=round(positivity_score, 2),
-                engagement_score=round(engagement_score, 2),
-                growth_score=round(growth_score, 2)
-            )
+            vibe_score = VibeScore()
+            vibe_score.server_id = server_id
+            vibe_score.overall_score = round(overall_score, 2)
+            vibe_score.activity_score = round(activity_score, 2)
+            vibe_score.positivity_score = round(positivity_score, 2)
+            vibe_score.engagement_score = round(engagement_score, 2)
+            vibe_score.growth_score = round(growth_score, 2)
             
             db.session.add(vibe_score)
             
@@ -241,11 +240,11 @@ class VibeAnalyzer:
             analytics_data = self._collect_server_analytics(server)
             
             # Create new analytics record
-            analytics = ServerAnalytics(
-                server_id=server_id,
-                date=today,
-                **analytics_data
-            )
+            analytics = ServerAnalytics()
+            analytics.server_id = server_id
+            analytics.date = today
+            for key, value in analytics_data.items():
+                setattr(analytics, key, value)
             
             db.session.add(analytics)
             db.session.commit()

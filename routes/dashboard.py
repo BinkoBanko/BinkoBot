@@ -73,6 +73,9 @@ def overview():
 def server_detail(server_id):
     """Detailed view of a specific server"""
     user = User.query.get(session['user_id'])
+    if not user:
+        flash('User session expired. Please log in again.', 'error')
+        return redirect(url_for('auth.login'))
     
     # Check if user has access to this server
     user_server = UserServer.query.filter_by(
@@ -110,6 +113,9 @@ def server_detail(server_id):
 def refresh_server(server_id):
     """Refresh analytics and vibe score for a server"""
     user = User.query.get(session['user_id'])
+    if not user:
+        flash('User session expired. Please log in again.', 'error')
+        return redirect(url_for('auth.login'))
     
     # Check if user has access to this server
     user_server = UserServer.query.filter_by(
@@ -154,12 +160,11 @@ def sync_user_servers(user):
             
             if not server:
                 # Create new server record
-                server = Server(
-                    discord_id=guild['id'],
-                    name=guild['name'],
-                    icon=guild.get('icon'),
-                    owner_id=guild.get('owner_id')
-                )
+                server = Server()
+                server.discord_id = guild['id']
+                server.name = guild['name']
+                server.icon = guild.get('icon')
+                server.owner_id = guild.get('owner_id')
                 db.session.add(server)
                 db.session.flush()  # Get the server ID
             else:
@@ -176,11 +181,10 @@ def sync_user_servers(user):
             
             if not user_server:
                 # Create user-server relationship
-                user_server = UserServer(
-                    user_id=user.id,
-                    server_id=server.id,
-                    permissions=guild.get('permissions', 0)
-                )
+                user_server = UserServer()
+                user_server.user_id = user.id
+                user_server.server_id = server.id
+                user_server.permissions = guild.get('permissions', 0)
                 db.session.add(user_server)
             else:
                 # Update permissions

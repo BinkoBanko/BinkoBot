@@ -15,7 +15,7 @@ class DiscordService:
         self.redirect_uri = os.environ.get('DISCORD_REDIRECT_URI', 'http://localhost:5000/auth/callback')
         self.base_url = 'https://discord.com/api/v10'
         
-    def get_oauth_url(self, state: str = None) -> str:
+    def get_oauth_url(self, state: Optional[str] = None) -> str:
         """Generate Discord OAuth authorization URL"""
         params = {
             'client_id': self.client_id,

@@ -21,6 +21,8 @@ def api_login_required(f):
 def server_vibe_history(server_id):
     """Get vibe score history for a server"""
     user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 401
     
     # Check access
     user_server = UserServer.query.filter_by(
@@ -60,6 +62,8 @@ def server_vibe_history(server_id):
 def server_analytics(server_id):
     """Get analytics data for a server"""
     user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 401
     
     # Check access
     user_server = UserServer.query.filter_by(
@@ -99,6 +103,8 @@ def server_analytics(server_id):
 def dashboard_stats():
     """Get overall dashboard statistics"""
     user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 401
     
     # Get user's servers
     server_ids = [us.server_id for us in user.servers]
@@ -140,6 +146,8 @@ def dashboard_stats():
 def server_summary(server_id):
     """Get server summary data"""
     user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 401
     
     # Check access
     user_server = UserServer.query.filter_by(

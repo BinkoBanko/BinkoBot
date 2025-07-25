@@ -53,6 +53,10 @@ def callback():
         refresh_token = token_data.get('refresh_token')
         
         # Get user information
+        if not access_token:
+            flash('No access token received from Discord.', 'error')
+            return redirect(url_for('index'))
+        
         user_info = discord_service.get_user_info(access_token)
         if not user_info:
             flash('Failed to get user information from Discord.', 'error')
@@ -71,14 +75,13 @@ def callback():
             user.last_login = db.func.now()
         else:
             # Create new user
-            user = User(
-                discord_id=user_info['id'],
-                username=user_info['username'],
-                discriminator=user_info.get('discriminator', '0000'),
-                avatar=user_info.get('avatar'),
-                access_token=access_token,
-                refresh_token=refresh_token
-            )
+            user = User()
+            user.discord_id = user_info['id']
+            user.username = user_info['username']
+            user.discriminator = user_info.get('discriminator', '0000')
+            user.avatar = user_info.get('avatar')
+            user.access_token = access_token
+            user.refresh_token = refresh_token
             db.session.add(user)
         
         db.session.commit()
