@@ -1,0 +1,28 @@
+{
+  "soft": [
+    "soft", "gentle", "warm", "cozy", "tender", "sweet", "calm", "peaceful",
+    "cuddly", "fluffy", "wholesome", "loving", "affectionate", "mellow", "serene"
+  ],
+  "chaotic": [
+    "chaotic", "chaos", "feral", "unhinged", "wild", "hyper", "gremlin",
+    "goblin", "chaotic evil", "chaotic neutral", "chaotic good",
+    "energetic", "frenzied", "erratic", "unhinged mode"
+  ],
+  "lewd": [
+    "lewd", "spicy", "naughty", "frisky", "nsfw", "suggestive",
+    "flirty", "dirty", "risque", "cheeky", "explicit"
+  ],
+  "sad": [
+    "sad", "depressed", "down", "blue", "melancholy", "gloomy", "unhappy",
+    "miserable", "heartbroken", "grief", "upset", "tearful", "crying",
+    "lonely", "hurt", "hopeless", "low"
+  ],
+  "protective": [
+    "protective", "guard", "safe", "secure", "shield", "defend", "watchful",
+    "vigilant", "caring", "nurturing", "mama bear", "papa bear", "loyal"
+  ],
+  "neutral": [
+    "neutral", "okay", "fine", "normal", "meh", "moderate", "balanced",
+    "alright", "chill", "easygoing", "stable", "average", "indifferent"
+  ]
+}
