@@ -1,0 +1,1 @@
+- [Discord OAuth redirect URI pitfalls](discord-oauth-redirect.md) — Discord rejects stale redirect URIs before the callback runs; guard must live in /auth/login, and never pin the volatile dev domain.
