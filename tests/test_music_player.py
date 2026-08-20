@@ -83,6 +83,8 @@ def _make_interaction(*, in_voice: bool = False, guild_id: int = 1001):
     """Return a fully mocked discord.Interaction."""
     interaction = MagicMock()
     interaction.guild.id = guild_id
+    # No real discord.py-side voice client until code actually connects one.
+    interaction.guild.voice_client = None
     interaction.response = MagicMock()
     interaction.response.is_done = MagicMock(return_value=False)
     interaction.response.send_message = AsyncMock()

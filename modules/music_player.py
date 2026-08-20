@@ -78,9 +78,14 @@ class MusicPlayer(commands.Cog):
         self.reconnect_max_retries = VOICE_RECONNECT_MAX_RETRIES
         self.reconnect_retry_delay = VOICE_RECONNECT_RETRY_DELAY
         self.spotify = None
-        if os.getenv("SPOTIFY_CLIENT_ID") and os.getenv("SPOTIFY_CLIENT_SECRET"):
+        spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
+        spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+        if spotify_client_id and spotify_client_secret:
             try:
-                creds = SpotifyClientCredentials()
+                creds = SpotifyClientCredentials(
+                    client_id=spotify_client_id,
+                    client_secret=spotify_client_secret,
+                )
                 self.spotify = spotipy.Spotify(client_credentials_manager=creds)
             except Exception as exc:
                 logger.warning("Spotify init failed — Spotify support disabled: %s", exc)
@@ -138,6 +143,26 @@ class MusicPlayer(commands.Cog):
                 guild_id,
                 exc,
             )
+
+    def _sync_state_voice_client(
+        self, guild: discord.Guild, state: GuildMusicState
+    ) -> discord.VoiceClient | None:
+        """Reconcile our per-guild bookkeeping with discord.py's own
+        authoritative voice client for this guild.
+
+        Our own ``state.voice_client`` can desync from discord.py's real
+        connection cache (``guild.voice_client``) — most commonly after an
+        abrupt process restart while a voice session was active, or a failed
+        auto-reconnect that didn't fully clear discord.py's cache. Always
+        trust ``guild.voice_client`` as the source of truth and self-heal
+        our bookkeeping from it, rather than letting the two disagree.
+        """
+        real_vc = guild.voice_client
+        if real_vc is not None and real_vc.is_connected():
+            state.voice_client = real_vc
+        elif state.voice_client is not None and not state.voice_client.is_connected():
+            state.voice_client = None
+        return state.voice_client
 
     async def _recover_voice_connection(
         self, guild_id: int, *, force: bool = False
@@ -271,6 +296,12 @@ class MusicPlayer(commands.Cog):
                 f"after {retries} attempt(s). The music queue was cleared; "
                 "please use `/play` to start again.",
             )
+            # A failed connect(reconnect=True) attempt can leave a
+            # half-registered client in discord.py's own cache; clear it so
+            # it doesn't block a future /join.
+            leftover_guild = self.bot.get_guild(guild_id)
+            if leftover_guild is not None and leftover_guild.voice_client is not None:
+                await self._cleanup_stale_voice_client(guild_id, leftover_guild.voice_client)
             state.voice_client = None
             state.voice_channel = None
             state.queue.clear()
@@ -491,7 +522,7 @@ class MusicPlayer(commands.Cog):
         guild_id = interaction.guild.id
         state = self._state(guild_id)
 
-        vc = state.voice_client
+        vc = self._sync_state_voice_client(interaction.guild, state)
         if vc and vc.is_connected():
             state.text_channel = getattr(interaction, "channel", None)
             state.voice_channel = getattr(vc, "channel", None) or (
@@ -516,6 +547,12 @@ class MusicPlayer(commands.Cog):
         if not interaction.user.voice:
             await _send_error("❌ You need to be in a voice channel first.")
             return None
+
+        # Clear any stale discord.py-side client left over from a previous
+        # session (e.g. an abrupt restart) so it doesn't block a fresh connect.
+        stale_vc = interaction.guild.voice_client
+        if stale_vc is not None and not stale_vc.is_connected():
+            await self._cleanup_stale_voice_client(guild_id, stale_vc)
 
         try:
             vc = await interaction.user.voice.channel.connect()
@@ -875,7 +912,7 @@ class MusicPlayer(commands.Cog):
         try:
             guild_id = interaction.guild.id
             state = self._state(guild_id)
-            vc = state.voice_client
+            vc = self._sync_state_voice_client(interaction.guild, state)
 
             if state.reconnecting:
                 self._cancel_voice_recovery(state)
@@ -887,6 +924,11 @@ class MusicPlayer(commands.Cog):
                 return
 
             if not vc or not vc.is_connected():
+                # Clean up any stale discord.py-side client left over from a
+                # previous session, so it doesn't silently block a future /join.
+                stale_vc = interaction.guild.voice_client
+                if stale_vc is not None:
+                    await self._cleanup_stale_voice_client(guild_id, stale_vc)
                 await interaction.response.send_message(
                     "❌ I'm not in a voice channel.", ephemeral=True
                 )
