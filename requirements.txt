@@ -1,5 +1,6 @@
 aiohttp
 async-timeout
+davey>=0.1.0
 discord.py==2.7.1
 email_validator
 flask
