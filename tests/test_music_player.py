@@ -239,6 +239,36 @@ async def test_play_next_disconnected_vc_clears_state():
     assert state.current is None
 
 
+async def test_after_playing_logs_unhandled_error_instead_of_swallowing_it():
+    """run_coroutine_threadsafe's Future silently drops exceptions unless
+    something retrieves them. after_playing must attach a callback that logs
+    a failure in _handle_playback_finished rather than losing it."""
+    module = _get_module()
+    cog = _make_cog()
+    guild_id = 950
+    state = cog._state(guild_id)
+
+    vc = MagicMock()
+    vc.is_connected.return_value = True
+    state.voice_client = vc
+    state.queue.append({"title": "Song", "url": "http://stream"})
+
+    with patch("modules.music_player.discord.FFmpegPCMAudio"), \
+         patch("modules.music_player.discord.PCMVolumeTransformer"):
+        await cog._play_next(guild_id)
+
+    after_playing = vc.play.call_args.kwargs["after"]
+
+    with patch.object(
+        cog, "_handle_playback_finished", new=AsyncMock(side_effect=RuntimeError("boom"))
+    ), patch.object(module.logger, "error") as mock_error:
+        after_playing(None)
+        # Give the scheduled coroutine, and its done-callback, a chance to run.
+        await asyncio.sleep(0.05)
+
+    assert any("boom" in str(call) for call in mock_error.call_args_list)
+
+
 # ---------------------------------------------------------------------------
 # 5. _ensure_voice: deferred vs. non-deferred error paths
 # ---------------------------------------------------------------------------
@@ -356,6 +386,33 @@ async def test_play_command_starts_track_when_idle():
     interaction.followup.send.assert_awaited_once()
     msg = interaction.followup.send.call_args[0][0]
     assert "Awesome Song" in msg
+
+
+async def test_play_defers_before_connecting_to_voice():
+    """/play must ack the interaction before the voice connect, which can
+    easily exceed Discord's 3-second response window — deferring after
+    connecting means a slow connect silently drops the interaction."""
+    cog = _make_cog()
+    guild_id = 902
+    interaction = _make_interaction(in_voice=True, guild_id=guild_id)
+    channel = interaction.user.voice.channel
+    vc = channel.connect.return_value
+
+    call_order: list[str] = []
+    interaction.response.defer = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("defer")
+    )
+    channel.connect = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("connect") or vc
+    )
+
+    fake_track = {"title": "Song", "url": "http://stream"}
+    with patch.object(cog, "_extract_info", new=AsyncMock(return_value=fake_track)), \
+         patch("modules.music_player.discord.FFmpegPCMAudio"), \
+         patch("modules.music_player.discord.PCMVolumeTransformer"):
+        await cog.play.callback(cog, interaction, "song")
+
+    assert call_order == ["defer", "connect"]
 
 
 async def test_play_command_queues_behind_current_track():
@@ -585,6 +642,33 @@ async def test_leave_resets_volume_to_default():
 
     assert state.volume == 100
     vc.disconnect.assert_awaited_once()
+
+
+async def test_leave_defers_before_disconnecting_voice():
+    """/leave must ack the interaction before vc.disconnect(), which performs
+    a real network teardown that can exceed Discord's 3-second response
+    window — responding only after disconnect risks the interaction expiring
+    with no acknowledgement shown to the user."""
+    cog = _make_cog()
+    guild_id = 904
+    interaction = _make_interaction(in_voice=True, guild_id=guild_id)
+    vc = interaction.user.voice.channel.connect.return_value
+    state = cog._state(guild_id)
+    state.voice_client = vc
+    interaction.guild.voice_client = vc
+
+    call_order: list[str] = []
+    interaction.response.defer = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("defer")
+    )
+    vc.disconnect = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("disconnect")
+    )
+
+    await cog.leave.callback(cog, interaction)
+
+    assert call_order == ["defer", "disconnect"]
+    interaction.followup.send.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------

@@ -468,9 +468,12 @@ class MusicPlayer(commands.Cog):
         def after_playing(error):
             if error:
                 logger.error("Playback error in guild %s: %s", guild_id, error)
-            # Schedule next track on the bot's event loop
+            # Schedule next track on the bot's event loop. Unlike an
+            # asyncio.Task, a run_coroutine_threadsafe Future silently drops
+            # any exception unless something retrieves it — log it instead.
             coro = self._handle_playback_finished(guild_id, vc, error)
-            asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
+            future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
+            future.add_done_callback(self._log_future_exception)
 
         try:
             source = discord.FFmpegPCMAudio(track["url"], **FFMPEG_OPTS)
@@ -486,6 +489,21 @@ class MusicPlayer(commands.Cog):
             state.current = None
             # Try the next track
             await self._play_next(guild_id)
+
+    @staticmethod
+    def _log_future_exception(future) -> None:
+        """Surface exceptions from a run_coroutine_threadsafe Future.
+
+        Nothing else ever calls .result()/.exception() on this future, so
+        without this callback a failure here would vanish with no log line.
+        """
+        if future.cancelled():
+            return
+        exc = future.exception()
+        if exc:
+            logger.error(
+                "Unhandled error advancing playback queue: %s", exc, exc_info=exc
+            )
 
     async def _handle_playback_finished(
         self, guild_id: int, source_voice_client, error
@@ -679,12 +697,12 @@ class MusicPlayer(commands.Cog):
     @app_commands.command(name="play", description="Play music from YouTube or Spotify")
     @app_commands.describe(query="YouTube link, Spotify link, or search term")
     async def play(self, interaction: discord.Interaction, query: str):
-        # Validate voice before deferring — errors can still use the initial response
-        state = await self._ensure_voice(interaction)
+        # Ack immediately: the voice connect below, and the extraction that
+        # follows, can both easily exceed Discord's 3-second response window.
+        await interaction.response.defer()
+        state = await self._ensure_voice(interaction, deferred=True)
         if not state:
             return
-
-        await interaction.response.defer()   # extraction can take a moment
 
         try:
             # Resolve Spotify → YouTube search queries
@@ -909,6 +927,9 @@ class MusicPlayer(commands.Cog):
 
     @app_commands.command(name="leave", description="Disconnect from the voice channel")
     async def leave(self, interaction: discord.Interaction):
+        # Ack immediately: vc.disconnect() below performs a real network
+        # teardown that can exceed Discord's 3-second response window.
+        await interaction.response.defer()
         try:
             guild_id = interaction.guild.id
             state = self._state(guild_id)
@@ -920,7 +941,7 @@ class MusicPlayer(commands.Cog):
                 state.current = None
                 state.is_playing = False
                 state.voice_channel = None
-                await interaction.response.send_message("👋 Left the voice channel.")
+                await interaction.followup.send("👋 Left the voice channel.")
                 return
 
             if not vc or not vc.is_connected():
@@ -929,7 +950,7 @@ class MusicPlayer(commands.Cog):
                 stale_vc = interaction.guild.voice_client
                 if stale_vc is not None:
                     await self._cleanup_stale_voice_client(guild_id, stale_vc)
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     "❌ I'm not in a voice channel.", ephemeral=True
                 )
                 return
@@ -943,10 +964,10 @@ class MusicPlayer(commands.Cog):
             state.voice_channel = None
             state.volume = 100
 
-            await interaction.response.send_message("👋 Left the voice channel.")
+            await interaction.followup.send("👋 Left the voice channel.")
         except Exception as exc:
             logger.exception("Error in /leave")
-            await interaction.response.send_message(f"❌ Error: {exc}", ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {exc}", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

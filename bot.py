@@ -3,6 +3,7 @@ import json
 import discord
 import asyncio
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from discord.ext import commands
 from keep_alive import keep_alive
@@ -33,18 +34,33 @@ def nightmode_enabled(guild_id: int) -> bool:
     return data.get(str(guild_id), False)
 
 # Logging setup
-logging.basicConfig(
-    level=logging.INFO if logging_enabled else logging.WARNING,
-    format='[%(asctime)s] [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler()]
-)
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+console_handler = logging.StreamHandler()
 if logging_enabled and log_flags_only:
     class FlagOnlyFilter(logging.Filter):
         def filter(self, record: logging.LogRecord) -> bool:
             return getattr(record, "flagged", False)
 
-    for handler in logging.getLogger().handlers:
-        handler.addFilter(FlagOnlyFilter())
+    console_handler.addFilter(FlagOnlyFilter())
+
+# Independent of the console's INFO/flag-only settings above: always persist
+# warnings and worse to disk, so issues survive a host restart (e.g. Replit
+# recycling the process) even when nobody was watching the console live.
+file_handler = RotatingFileHandler(
+    os.path.join(LOG_DIR, "bot.log"),
+    maxBytes=5 * 1024 * 1024,
+    backupCount=3,
+    encoding="utf-8",
+)
+file_handler.setLevel(logging.WARNING)
+
+logging.basicConfig(
+    level=logging.INFO if logging_enabled else logging.WARNING,
+    format='[%(asctime)s] [%(levelname)s] %(name)s: %(message)s',
+    handlers=[console_handler, file_handler],
+)
 
 # Intents setup
 intents = discord.Intents.default()
