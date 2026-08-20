@@ -678,21 +678,20 @@ class MusicPlayer(commands.Cog):
 
     @app_commands.command(name="join", description="Join your voice channel")
     async def join(self, interaction: discord.Interaction):
+        # Ack immediately: the voice connect below can easily exceed
+        # Discord's 3-second response window.
+        await interaction.response.defer(ephemeral=True)
         try:
-            state = await self._ensure_voice(interaction)
+            state = await self._ensure_voice(interaction, deferred=True)
             if not state:
                 return
             channel = interaction.user.voice.channel
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"✅ Connected to **{channel.name}**.", ephemeral=True
             )
         except Exception as exc:
             logger.exception("Error in /join")
-            msg = f"❌ Error: {exc}"
-            if interaction.response.is_done():
-                await interaction.followup.send(msg, ephemeral=True)
-            else:
-                await interaction.response.send_message(msg, ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {exc}", ephemeral=True)
 
     @app_commands.command(name="play", description="Play music from YouTube or Spotify")
     @app_commands.describe(query="YouTube link, Spotify link, or search term")
@@ -754,6 +753,16 @@ class MusicPlayer(commands.Cog):
                     guild_id = interaction.guild.id
                     await self._play_next(guild_id)
                     current = state.current
+                    if current is None:
+                        # _play_next no-ops (leaving state.current unset) when
+                        # the voice client isn't actually connected yet.
+                        await interaction.followup.send(
+                            f"{queue_summary}\n⚠️ Queued, but couldn't start "
+                            "playback — the voice connection isn't ready yet. "
+                            "Try `/play` again in a moment.",
+                            ephemeral=True,
+                        )
+                        return
                     await interaction.followup.send(
                         f"{queue_summary}\n▶️ Now playing: **{current['title']}**"
                         + (f"\n📋 {added_count - 1} more track(s) queued." if added_count > 1 else "")
@@ -777,6 +786,15 @@ class MusicPlayer(commands.Cog):
                 state.queue.append(track)
                 await self._play_next(guild_id)
                 current = state.current
+                if current is None:
+                    # _play_next no-ops (leaving state.current unset) when
+                    # the voice client isn't actually connected yet.
+                    await interaction.followup.send(
+                        "⚠️ Queued, but couldn't start playback — the voice "
+                        "connection isn't ready yet. Try `/play` again in a moment.",
+                        ephemeral=True,
+                    )
+                    return
                 await interaction.followup.send(
                     f"▶️ Now playing: **{current['title']}**"
                 )

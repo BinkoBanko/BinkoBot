@@ -388,6 +388,47 @@ async def test_play_command_starts_track_when_idle():
     assert "Awesome Song" in msg
 
 
+async def test_join_defers_before_connecting_to_voice():
+    """/join must ack the interaction before the voice connect, which can
+    easily exceed Discord's 3-second response window."""
+    cog = _make_cog()
+    guild_id = 903
+    interaction = _make_interaction(in_voice=True, guild_id=guild_id)
+    channel = interaction.user.voice.channel
+    vc = channel.connect.return_value
+
+    call_order: list[str] = []
+    interaction.response.defer = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("defer")
+    )
+    channel.connect = AsyncMock(
+        side_effect=lambda *a, **k: call_order.append("connect") or vc
+    )
+
+    await cog.join.callback(cog, interaction)
+
+    assert call_order == ["defer", "connect"]
+    interaction.followup.send.assert_awaited_once()
+
+
+async def test_play_command_reports_error_when_playback_fails_to_start():
+    """If _play_next can't actually start playback (e.g. voice dropped right
+    after connecting), /play must report that instead of crashing when it
+    assumes state.current is set."""
+    cog = _make_cog()
+    guild_id = 905
+    interaction = _make_interaction(in_voice=True, guild_id=guild_id)
+    fake_track = {"title": "Song", "url": "http://stream"}
+
+    with patch.object(cog, "_extract_info", new=AsyncMock(return_value=fake_track)), \
+         patch.object(cog, "_play_next", new=AsyncMock()):  # leaves state.current as None
+        await cog.play.callback(cog, interaction, "song")
+
+    interaction.followup.send.assert_awaited_once()
+    msg = interaction.followup.send.call_args[0][0]
+    assert "couldn't start playback" in msg
+
+
 async def test_play_defers_before_connecting_to_voice():
     """/play must ack the interaction before the voice connect, which can
     easily exceed Discord's 3-second response window — deferring after
