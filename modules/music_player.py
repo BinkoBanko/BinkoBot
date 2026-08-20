@@ -483,6 +483,24 @@ class MusicPlayer(commands.Cog):
                 source, volume=state.volume / 100
             )
             vc.play(source, after=after_playing)
+
+            # Diagnostic for the DAVE E2EE audio-transport issue: Discord now
+            # requires E2EE on regular voice channels, and voice_privacy_code
+            # is only set once that session is genuinely established. If it's
+            # missing, playback is likely silent even though nothing raised.
+            privacy_code = getattr(vc, "voice_privacy_code", None)
+            if privacy_code:
+                logger.info(
+                    "Started playback in guild %s (E2EE established, code=%s)",
+                    guild_id, privacy_code,
+                )
+            else:
+                logger.warning(
+                    "Started playback in guild %s but no E2EE voice_privacy_code "
+                    "is set - the DAVE session may not be established, so audio "
+                    "may not reach listeners even though playback started.",
+                    guild_id,
+                )
         except Exception as exc:
             logger.error("Failed to start playback for guild %s: %s", guild_id, exc)
             state.is_playing = False

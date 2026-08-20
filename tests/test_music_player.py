@@ -218,6 +218,54 @@ async def test_play_next_starts_first_track():
     MockVolume.assert_called_once_with(mock_source, volume=1.0)
     mock_vc.play.assert_called_once_with(volume_source, after=ANY)
     assert state.current == track
+
+
+async def test_play_next_warns_when_e2ee_session_not_established():
+    """Discord now requires E2EE (DAVE) on regular voice channels. If
+    voice_privacy_code isn't set after play() starts, the DAVE session likely
+    never finished, so audio may be silently dropped even though nothing
+    raised - this must be logged so it's diagnosable."""
+    module = _get_module()
+    cog = _make_cog()
+    guild_id = 56
+    state = cog._state(guild_id)
+
+    mock_vc = MagicMock()
+    mock_vc.is_connected.return_value = True
+    mock_vc.voice_privacy_code = None
+    state.voice_client = mock_vc
+    state.queue.append({"title": "Song", "url": "http://stream/1"})
+
+    with patch("modules.music_player.discord.FFmpegPCMAudio"), \
+         patch("modules.music_player.discord.PCMVolumeTransformer"), \
+         patch.object(module.logger, "warning") as mock_warning:
+        await cog._play_next(guild_id)
+
+    assert any(
+        "voice_privacy_code" in str(call) for call in mock_warning.call_args_list
+    )
+
+
+async def test_play_next_logs_info_when_e2ee_session_established():
+    module = _get_module()
+    cog = _make_cog()
+    guild_id = 57
+    state = cog._state(guild_id)
+
+    mock_vc = MagicMock()
+    mock_vc.is_connected.return_value = True
+    mock_vc.voice_privacy_code = "abcd-1234"
+    state.voice_client = mock_vc
+    state.queue.append({"title": "Song", "url": "http://stream/1"})
+
+    with patch("modules.music_player.discord.FFmpegPCMAudio"), \
+         patch("modules.music_player.discord.PCMVolumeTransformer"), \
+         patch.object(module.logger, "warning") as mock_warning, \
+         patch.object(module.logger, "info") as mock_info:
+        await cog._play_next(guild_id)
+
+    mock_warning.assert_not_called()
+    assert any("abcd-1234" in str(call) for call in mock_info.call_args_list)
     assert state.is_playing is True
     assert len(state.queue) == 0
 
